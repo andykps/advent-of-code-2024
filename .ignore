@@ -1,0 +1,2 @@
+# Used by NVim (Telescope) to not ignore text files when searching
+!*.txt
