@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	pt2 := flag.Bool("pt2", false, "Is 'Part 2' enabled?")
 	flag.Parse()
 	input := "input.txt"
 	if len(flag.Args()) > 0 {
@@ -19,6 +20,14 @@ func main() {
 	bytes, err := os.ReadFile(input)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	// fmt.Println(string(bytes))
+	if *pt2 {
+		// pt2re := regexp.MustCompile(`(^|don't\(\)).*?(do\(\)|$)`)
+		pt2re := regexp.MustCompile(`(?s)don't\(\).*?(do\(\)|$)`)
+		bytes = pt2re.ReplaceAll(bytes, []byte(""))
+		// fmt.Println(string(bytes))
 	}
 
 	re := regexp.MustCompile(`mul\((\d{1,3}),(\d{1,3})\)`)
