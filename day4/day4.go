@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
+	"strings"
 )
-
-var re = regexp.MustCompile(`XMAS`)
 
 func main() {
 	flag.Parse()
@@ -76,18 +74,9 @@ func main() {
 	fmt.Println(total)
 }
 
-func reverse(arr []byte) (ret []byte) {
-	size := len(arr)
-	for i := 0; i < size; i++ {
-		ret = append(ret, arr[size-i-1])
-	}
-	return
-}
-
 func count(arr []byte) (ret int) {
-	matches := re.FindAll(arr, -1)
-	ret += len(matches)
-	matches = re.FindAll(reverse(arr), -1)
-	ret += len(matches)
+	str := string(arr)
+	ret += strings.Count(str, "XMAS")
+	ret += strings.Count(str, "SAMX")
 	return
 }
