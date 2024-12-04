@@ -22,19 +22,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// fmt.Println(string(bytes))
 	if *pt2 {
-		// pt2re := regexp.MustCompile(`(^|don't\(\)).*?(do\(\)|$)`)
 		pt2re := regexp.MustCompile(`(?s)don't\(\).*?(do\(\)|$)`)
 		bytes = pt2re.ReplaceAll(bytes, []byte(""))
-		// fmt.Println(string(bytes))
 	}
 
 	re := regexp.MustCompile(`mul\((\d{1,3}),(\d{1,3})\)`)
 	total := 0
 	match := re.FindAllSubmatch(bytes, -1)
 	for _, element := range match {
-		// fmt.Println(string(element[1]), string(element[2]))
 		a, _ := strconv.Atoi(string(element[1]))
 		b, _ := strconv.Atoi(string(element[2]))
 		total += a * b
