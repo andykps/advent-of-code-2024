@@ -26,9 +26,14 @@ func main() {
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		data = append(data, scanner.Bytes())
+		line := scanner.Bytes()
+		// create a copy of the line here because Scan() can overwrite the bufio buffer of which my slice is just a view?
+		// I guess I could also have called `scanner.Text()`
+		tmp := make([]byte, len(line))
+		copy(tmp, line)
+		data = append(data, tmp)
 	}
-	fmt.Println(len(data), len(data[0]))
+	// fmt.Println(len(data), len(data[0]))
 
 	total := 0
 
@@ -76,6 +81,7 @@ func main() {
 
 func count(arr []byte) (ret int) {
 	str := string(arr)
+	// fmt.Println(str)
 	ret += strings.Count(str, "XMAS")
 	ret += strings.Count(str, "SAMX")
 	return
