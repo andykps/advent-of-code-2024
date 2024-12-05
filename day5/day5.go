@@ -34,7 +34,8 @@ func main() {
 	readRules(scanner)
 
 	// now we've read the rules, scanner is ready to read page numbers
-	total := 0
+	pt1Total := 0
+	pt2Total := 0
 	for scanner.Scan() {
 		line := scanner.Text()
 		parts := strings.Split(line, ",")
@@ -44,11 +45,17 @@ func main() {
 			pages = append(pages, page)
 		}
 		if checkRules(pages) {
-			total += pages[len(pages)/2]
+			// pt 1
+			pt1Total += pages[len(pages)/2]
+		} else {
+			// pt 2
+			correctOrder := correctOrder(pages)
+			pt2Total += correctOrder[len(correctOrder)/2]
 		}
 	}
 
-	fmt.Println(total)
+	fmt.Println(pt1Total)
+	fmt.Println(pt2Total)
 }
 
 func readRules(scanner *bufio.Scanner) {
@@ -80,4 +87,24 @@ func checkRules(pages []int) bool {
 		}
 	}
 	return true
+}
+
+func correctOrder(pages []int) []int {
+	for i := 0; i < len(rules); i++ {
+		rule := rules[i]
+		matches := []int{}
+		for p := 0; p < len(pages); p++ {
+			if pages[p] == rule.left || pages[p] == rule.right {
+				matches = append(matches, p)
+				continue
+			}
+		}
+		if len(matches) == 2 && pages[matches[0]] != rule.left {
+			tmp := pages[matches[0]]
+			pages[matches[0]] = pages[matches[1]]
+			pages[matches[1]] = tmp
+			return correctOrder(pages)
+		}
+	}
+	return pages
 }
