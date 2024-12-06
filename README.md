@@ -30,3 +30,8 @@ I found out that I don't really understand how Go slices are backed by arrays. I
 
 I thought I was doing it cleverly by checking rows, cols and diagonals for XMAS or SAMX. It worked fine but then wasn't at all useful for part 2 so they both operate differently.
 
+## Day 5
+I've learnt to use a struct to hold data. It still feels like I'm missing a lot of knowledge about the capabilities of Go. I should read a book sometime...
+
+## Day 6
+Part one was fun. I just brute forced part two by running the simulation until it went over a limit (gridSize\*gridSize). It ran quickly enough. It was easier to just copy paste part one and work differently than trying to do in the same file.
