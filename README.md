@@ -35,3 +35,7 @@ I've learnt to use a struct to hold data. It still feels like I'm missing a lot 
 
 ## Day 6
 Part one was fun. I just brute forced part two by running the simulation until it went over a limit (gridSize\*gridSize). It ran quickly enough. It was easier to just copy paste part one and work differently than trying to do in the same file.
+
+## Day 7
+I had to read up on permutations again. Initially my function to generate the perms didn't work because I wasn't copying the slice each time. Seems I've still not got my head around how slices are backed by arrays. Gemini was able to point out my error though. It attempted to optimise it for me too but I didn't really understand the result so left as is. ≈15s to run part 2. I did wonder if the longer run time was because of all the conversion between int and string and back again but I tried out multiplying by 10 to the power of number of digits before adding the next operand and it made little difference. The longer time must be the increased number of permutations.
+I've found out about the `range` keyword which made iterating over slices easier.
