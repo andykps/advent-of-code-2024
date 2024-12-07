@@ -11,13 +11,16 @@ import (
 )
 
 func main() {
+	pt2 := flag.Bool("pt2", false, "Run part 2 instead of part 1")
 	flag.Parse()
 	input := "input.txt"
 	if len(flag.Args()) > 0 {
 		input = flag.Args()[0]
 	}
 	symbols := []byte("+*")
-
+	if *pt2 {
+		symbols = append(symbols, 124)
+	}
 	f, err := os.Open(input)
 	if err != nil {
 		log.Fatal(err)
@@ -47,6 +50,8 @@ out:
 					subtotal *= operand
 				case 43: // +
 					subtotal += operand
+				case 124: // \
+					subtotal, _ = strconv.Atoi(strconv.Itoa(subtotal) + strconv.Itoa(operand))
 				}
 			}
 			if subtotal == answer {
