@@ -19,6 +19,7 @@ type point struct {
 }
 
 func main() {
+	pt2 := flag.Bool("pt2", false, "Calculate for part 2")
 	flag.Parse()
 	input := "input.txt"
 	if len(flag.Args()) > 0 {
@@ -27,22 +28,11 @@ func main() {
 	grid := readGridFromFile(input)
 	antennas := locateAntennas(grid)
 
-	for _, coords := range antennas {
-		for i := 0; i < len(coords); i++ {
-			for j := i + 1; j < len(coords); j++ {
-				x1 := coords[i].x + coords[i].x - coords[j].x
-				y1 := coords[i].y + coords[i].y - coords[j].y
-				x2 := coords[j].x + coords[j].x - coords[i].x
-				y2 := coords[j].y + coords[j].y - coords[i].y
-				if x1 >= 0 && x1 < len(grid[0]) && y1 >= 0 && y1 < len(grid) {
-					grid[y1][x1] = ANTINODE
-				}
-				if x2 >= 0 && x2 < len(grid[0]) && y2 >= 0 && y2 < len(grid) {
-					grid[y2][x2] = ANTINODE
-				}
-			}
-		}
+	if *pt2 {
+		fmt.Println("Doing part 2")
+		drawAntinodes(grid, antennas, 1, len(grid)*len(grid[0]))
 	}
+	drawAntinodes(grid, antennas, 2, 1)
 
 	total := countInGrid(grid, ANTINODE)
 	fmt.Println(total)
@@ -100,4 +90,31 @@ func countInGrid(grid [][]byte, target byte) (count int) {
 		}
 	}
 	return
+}
+
+func drawAntinodes(grid [][]byte, antennas map[byte][]point, start, count int) {
+	for _, coords := range antennas {
+		for i := 0; i < len(coords); i++ {
+			for j := i + 1; j < len(coords); j++ {
+				for z := start; z < start+count; z++ {
+					x1 := z*(coords[i].x-coords[j].x) + coords[j].x
+					y1 := z*(coords[i].y-coords[j].y) + coords[j].y
+					if x1 >= 0 && x1 < len(grid[0]) && y1 >= 0 && y1 < len(grid) {
+						grid[y1][x1] = ANTINODE
+					} else {
+						break
+					}
+				}
+				for z := start; z < start+count; z++ {
+					x2 := z*(coords[j].x-coords[i].x) + coords[i].x
+					y2 := z*(coords[j].y-coords[i].y) + coords[i].y
+					if x2 >= 0 && x2 < len(grid[0]) && y2 >= 0 && y2 < len(grid) {
+						grid[y2][x2] = ANTINODE
+					} else {
+						break
+					}
+				}
+			}
+		}
+	}
 }
