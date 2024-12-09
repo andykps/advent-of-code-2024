@@ -44,3 +44,14 @@ I've found out about the `range` keyword which made iterating over slices easier
 I used a Go map type to store the positions of the antennas and a struct to hold the coordinate data, that hopefully makes things more readable. I had ended up with a type definition of `map[byte][][2]int` which wasn't. It did lead me to search for conventions on naming of custom types in Go. I didn't really find anything conclusive.
 
 I've tried to split up more into functions and it feels like some of these should be imported from a shared package(?) since I keep reusing them. I think that it helped me generalise the solution for part 2.
+
+## Day 9
+Ok, I gave up with Neovim... temporarily, at least for Go development. I can see how it will make editing easier and require less hand movement but it's slowing me down when I don't understand Go well enough either. I switched to VSCode because it much easier to set up the debugger (I clicked the install button).
+
+I also found that in VSCode there is less type hinting that whilst nice to see some of the time, really clutters up what I'm looking at. I need to find out which plugin is causing that and tweak the options or turn it off.
+
+Part 1 went quickly enough today but I got really stuck on part 2 because there was a bug in my code that only became apparent when using the real data. If the only available gap was just before the file being moved then it didn't move it. It was because in my defrag loop I was only finding available space up to, but not including the block before the first block of the file to be moved and this didn't happen in the test data.
+
+Rendering the blocks was helpful with test data but once the blocks numbers went into the extended ASCII codes over 127 then I started getting unrenderable characters. I stopped using `byte`s to render and switched to `rune`s instead as well as adding `0x7F600` so that I got emojis. Not because it was useful but it created some fun output.
+
+<img src="day9/emojis.png">
