@@ -22,15 +22,27 @@ func main() {
 	}
 
 	trailheads := findTrailheads(grid)
-	total := 0
+	pt1Total := 0
+	pt2Total := 0
 	for _, start := range trailheads {
 		visited9s := followTrail(grid, start)
-		total += len(visited9s)
+
 		if *debug {
 			fmt.Println(visited9s)
 		}
+
+		deduped9s := []point{}
+		for _, p := range visited9s {
+			if !slices.Contains(deduped9s, p) {
+				deduped9s = append(deduped9s, p)
+			}
+		}
+
+		pt1Total += len(deduped9s)
+		pt2Total += len(visited9s)
 	}
-	fmt.Println(total)
+	fmt.Println("Part 1:", pt1Total)
+	fmt.Println("Part 1:", pt2Total)
 }
 
 type point struct {
@@ -90,7 +102,7 @@ func followTrail(grid [][]int, start point) (visited9s []point) {
 			if x >= 0 && x < len(grid[0]) && y >= 0 && y < len(grid) {
 				if grid[y][x] == height+1 {
 					p2 := point{x, y}
-					if grid[y][x] == 9 && !slices.Contains(visited9s, p2) {
+					if grid[y][x] == 9 {
 						visited9s = append(visited9s, p2)
 					} else {
 						queue = append(queue, p2)

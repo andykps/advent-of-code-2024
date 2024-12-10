@@ -55,3 +55,10 @@ Part 1 went quickly enough today but I got really stuck on part 2 because there 
 Rendering the blocks was helpful with test data but once the blocks numbers went into the extended ASCII codes over 127 then I started getting unrenderable characters. I stopped using `byte`s to render and switched to `rune`s instead as well as adding `0x7F600` so that I got emojis. Not because it was useful but it created some fun output.
 
 <img src="day9/emojis.png">
+
+## Day 10
+I had a basic comprehension failure on this task. I started with recursion, didn't work; tried iteratively with a queue (which I guess is DFS?), still didn't work. Saw some comments about people solving part 2 before part 1 and realised I was counting paths rather than unique 9s. It still didn't produce the right result. After some line by line debugging and much higher numbers than I expected I realised that I was checking all 8 directions rather than just North, East, South, West :facepalm:
+
+At least when it came to part 2 there was only 20 or so characters to delete to remove the duplicate checking.
+
+I'm using a Go slice for my queue and removing from the head by creating a new slice with the remainder. This might not perform that well but runs quickly enough for me. I don't know if there is any sort of linked list type so that I could remove the head more easily.
