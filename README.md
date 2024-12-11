@@ -62,3 +62,21 @@ I had a basic comprehension failure on this task. I started with recursion, didn
 At least when it came to part 2 there was only 20 or so characters to delete to remove the duplicate checking.
 
 I'm using a Go slice for my queue and removing from the head by creating a new slice with the remainder. This might not perform that well but runs quickly enough for me. I don't know if there is any sort of linked list type so that I could remove the head more easily.
+
+## Day 11
+It was all so nice for part 1. I had an array of rules (funcs) that I could apply against the pebble (word) until I found one that matched and then update the line. I already had a parameter for the number of blinks so I just needed to run
+```
+go run . -blinks 75
+```
+for part 2.
+
+5 minutes later I'm looking at the code thinking it can't possibly be in an infinite loop. 10 minutes after that the process crapped out.
+```
+❯ go run . -blinks 75
+signal: killed
+```
+I suppose that could well be the OOM killer seeing the process using a lot of memory and not doing much?
+
+I put some debug output on so that I could see the blink number and current length of line and reran to see the lines getting very long and progress very slow beyond blink 30. There was no way it was getting to 75!
+
+I then realised that order doesn't really matter and refactored to use a map to store counts of each pebble rather than the full line. Initially I tried updating the map in place but obviously it ended up updating keys that hadn't been processed yet so when it came to update their count it was wrong. I then created a map of updates and applied that to the main map after each blink. Runs in <0.5s now! :watch: :hourglass:
