@@ -110,7 +110,7 @@ func followTrail(grid [][]int, start point) (visited9s []point) {
 				}
 			}
 		}
-		queue = append(queue[:0], queue[1:]...)
+		queue = queue[1:]
 	}
 	return
 }
