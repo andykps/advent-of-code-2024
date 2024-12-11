@@ -45,25 +45,47 @@ func main() {
 		fmt.Println(line)
 	}
 
+	pebbles := make(map[string]int)
+	for _, word := range line {
+		if cnt, ok := pebbles[word]; ok {
+			pebbles[word] = cnt + 1
+		} else {
+			pebbles[word] = 1
+		}
+	}
 	for b := 0; b < *blinks; b++ {
-		newline := []string{}
-		for _, word := range line {
+		updates := make(map[string]int)
+		for pebble, count := range pebbles {
 			for _, f := range rules {
-				if result := f(word); result == nil {
+				if result := f(pebble); result == nil {
 					continue
 				} else {
-					newline = append(newline, result...)
+					updates[pebble] -= count
+					updates[result[0]] += count
+					if len(result) > 1 {
+						updates[result[1]] += count
+					}
 					break
 				}
 			}
 		}
-		if *debug {
-			fmt.Println(newline)
+		for pebble, update := range updates {
+			pebbles[pebble] += update
 		}
-		line = newline
+		if *debug {
+			sum := 0
+			for _, v := range pebbles {
+				sum += v
+			}
+			fmt.Println(b, sum, pebbles)
+		}
 	}
 
-	fmt.Println(len(line))
+	sum := 0
+	for _, v := range pebbles {
+		sum += v
+	}
+	fmt.Println(sum)
 
 }
 
