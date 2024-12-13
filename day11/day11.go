@@ -47,11 +47,7 @@ func main() {
 
 	pebbles := make(map[string]int)
 	for _, word := range line {
-		if cnt, ok := pebbles[word]; ok {
-			pebbles[word] = cnt + 1
-		} else {
-			pebbles[word] = 1
-		}
+		pebbles[word] += 1
 	}
 	for b := 0; b < *blinks; b++ {
 		updates := make(map[string]int)
