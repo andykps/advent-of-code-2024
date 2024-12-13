@@ -24,13 +24,19 @@ type Machine struct {
 
 func main() {
 	debug := flag.Bool("debug", false, "Output extra debug info")
+	pt2 := flag.Bool("pt2", false, "Should we offset the prizes for part 2?")
 	flag.Parse()
 	input := "input.txt"
 	if len(flag.Args()) > 0 {
 		input = flag.Args()[0]
 	}
 
-	machines := readFromFile(input)
+	var machines []Machine
+	if (*pt2) {
+		machines = readFromFile(input, 10000000000000)
+	} else {
+		machines = readFromFile(input, 0)
+	}
 	if *debug {
 		fmt.Println(machines)
 	}
@@ -56,7 +62,7 @@ func calculateIntersection(a1 int, b1 int, c1 int, a2 int, b2 int, c2 int) (x fl
 	return
 }
 
-func readFromFile(path string) (machines []Machine) {
+func readFromFile(path string, prizeOffset int) (machines []Machine) {
 	f, err := os.Open(path)
 	if err != nil {
 		log.Fatal(err)
@@ -83,7 +89,7 @@ func readFromFile(path string) (machines []Machine) {
 		case "Button B":
 			m.buttonB = Coord{x, y}
 		case "Prize":
-			m.prize = Coord{x, y}
+			m.prize = Coord{x + prizeOffset, y + prizeOffset}
 		}
 	}
 	machines = append(machines, m)
