@@ -80,3 +80,8 @@ I suppose that could well be the OOM killer seeing the process using a lot of me
 I put some debug output on so that I could see the blink number and current length of line and reran to see the lines getting very long and progress very slow beyond blink 30. There was no way it was getting to 75!
 
 I then realised that order doesn't really matter and refactored to use a map to store counts of each pebble rather than the full line. Initially I tried updating the map in place but obviously it ended up updating keys that hadn't been processed yet so when it came to update their count it was wrong. I then created a map of updates and applied that to the main map after each blink. Runs in <0.5s now! :watch: :hourglass:
+
+## Day 12
+Urgh... what a chore. Part 1 went ok. It would have been interesting if I'd committed checkpoints of my process rather than just the working end result. I started off not grouping into regions so was incorrectly counting non connected regions of the same plant. It now does 2 passes, one to group the regions and then one to count borders of the plots. It then looks to each region to total the plots' borders.
+
+I really struggled with part 2. It's just not something that I've needed to think about before. I found a really helpful explanation of a way to solve it on [Reddit](https://www.reddit.com/r/adventofcode/comments/1hcdnk0/comment/m1nkmol/) but even that took me multiple attempts to really understand. There was also a lot of mixing up of x and dx and even transposing x and y values (I don't think having my grid as [y][x] is helpful!
