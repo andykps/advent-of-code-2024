@@ -32,6 +32,7 @@ func main() {
 	gridWidth = flag.Int("w", 101, "Width of grid (default=101)")
 	gridHeight = flag.Int("h", 103, "Height of grid (default=103)")
 	iterations := flag.Int("it", 100, "Number of iterations/seconds (default=100)")
+	pt2 := flag.Bool("pt2", false, "Should we be doing part 2?")
 	flag.Parse()
 	input := "input.txt"
 	if len(flag.Args()) > 0 {
@@ -54,6 +55,11 @@ func main() {
 		if *debug {
 			printGrid()
 			fmt.Println()
+		}
+		if (*pt2 && checkForLines(10)) {
+			printGrid()
+			fmt.Println("Tree after", i+1, "seconds")
+			break
 		}
 	}
 
@@ -158,4 +164,21 @@ func calcSafetyFactor() (sf int) {
 	}
 	fmt.Println(nw, ne, sw, se)
 	return nw * ne * sw * se
+}
+
+func checkForLines(minLength int) bool {
+	for _, bot := range bots {
+		if (bot.x + minLength < *gridWidth) {
+			var i int
+			for i = 1; i < minLength; i++ {
+				if len(grid[bot.y][bot.x + i]) == 0 {
+					break
+				}
+			}
+			if i == minLength - 1 {
+				return true
+			}
+		}
+	}
+	return false
 }
