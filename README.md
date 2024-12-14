@@ -85,3 +85,53 @@ I then realised that order doesn't really matter and refactored to use a map to 
 Urgh... what a chore. Part 1 went ok. It would have been interesting if I'd committed checkpoints of my process rather than just the working end result. I started off not grouping into regions so was incorrectly counting non connected regions of the same plant. It now does 2 passes, one to group the regions and then one to count borders of the plots. It then looks to each region to total the plots' borders.
 
 I really struggled with part 2. It's just not something that I've needed to think about before. I found a really helpful explanation of a way to solve it on [Reddit](https://www.reddit.com/r/adventofcode/comments/1hcdnk0/comment/m1nkmol/) but even that took me multiple attempts to really understand. There was also a lot of mixing up of x and dx and even transposing x and y values (I don't think having my grid as [y][x] is helpful!
+
+## Day 13
+I identified pretty quickly that I was finding the intersection of 2 lines. I used a [graphical calculator](https://www.desmos.com/calculator) to plot the examples and could see that I was looking intersections with whole values of x and y. I didn't fancy working out the maths myself so just did a search for [a formula to calculate the intersection](https://www.cuemath.com/geometry/intersection-of-two-lines/) and then checked the results to see if they were the same after having any fractional part truncated.
+
+Amazingly part 2 was just a case of adding the offset to the prize coords and because I hadn't tried to brute force the answer it worked straight away.
+
+## Day 14
+Part 1 was fun. I don't think there's any optimal way to do this, you just have to get each bot to make its move and calculate the result afterwards. I have a struct `Bot` to represent a robot with its position and vector and maintain 2 slices to hold them in both a grid format and a list of robots so that I can iterate them more easily without having to visit each cell of the grid. It forced me to play with pointers as having a slice of robots on their own ended up with copies of them that weren't getting updated. Instead both slices point to a single `Bot` struct.
+
+I gave each `Bot` an `id` attribute so that I could find them in the slice of `Bot`s at each grid cell using `slices.IndexFunc`
+
+In part 2 I really didn't understand how I was going to solve it but reasoned that if they were going to line up to draw a Christmas tree then there must be a long line of horizontally aligned robots to form the bottom of the tree. I wrote a function to check for a line longer than `x` in a row, set `x` to 10 and iterations to 10000 and the tree popped out as if by magic. It turned out there is also a border around the tree so I could be detecting that instead.
+
+Having written a function to output the grid in part 1 really helped to validate that it was the correct frame, however it took me 2 attempts to pass because I'd zero based the counter of iterations and the seconds started at 1.
+
+```
+1111111111111111111111111111111
+1.............................1
+1.............................1
+1.............................1
+1.............................1
+1..............1..............1
+1.............111.............1
+1............11111............1
+1...........1111111...........1
+1..........111111111..........1
+1............11111............1
+1...........1111111...........1
+1..........111111111..........1
+1.........11111111111.........1
+1........1111111111111........1
+1..........111111111..........1
+1.........11111111111.........1
+1........1111111111111........1
+1.......111111111111111.......1
+1......11111111111111111......1
+1........1111111111111........1
+1.......111111111111111.......1
+1......11111111111111111......1
+1.....1111111111111111111.....1
+1....111111111111111111111....1
+1.............111.............1
+1.............111.............1
+1.............111.............1
+1.............................1
+1.............................1
+1.............................1
+1.............................1
+1111111111111111111111111111111
+```
