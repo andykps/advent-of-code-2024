@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"slices"
-	"time"
 )
 
 const GRID byte = 0
@@ -54,11 +53,11 @@ func main() {
 	for _, move := range moves {
 		processMove(move)
 		if *debug {
-			fmt.Print("\033[H\033[2J")
+			//fmt.Print("\033[H\033[2J")
 			fmt.Println("Move:", string(move))
 			printGrid()
 			fmt.Println()
-			time.Sleep(20 * time.Millisecond)
+			//time.Sleep(20 * time.Millisecond)
 		}
 	}
 
