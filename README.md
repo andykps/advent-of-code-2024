@@ -135,3 +135,14 @@ Having written a function to output the grid in part 1 really helped to validate
 1.............................1
 1111111111111111111111111111111
 ```
+
+ADDENDUM: I don't know why I thought that there isn't an easier way to do part 1. I realised later that each bot moves linearly so you could just multiple the vector by the number of iterations and just find the modulus of the width or height as required. However that would have made part 2 harder with the way that I looked for the tree so I'm glad I didn't realise this!
+
+## Day 15
+Ok, so this is what, in my head, the robots were doing in part 14.
+
+Again, part 1 was fun and relatively uncomplicated. If the cell to moved into is empty, just move there. If it's got a box in it then keep looking for a space in the same direction until you hit a wall at which point you give up. Then move back in the opposite direction moving boxes into that space until you return to the robot which also gets moved into the space made by the final box.
+
+Part 2 was more complicated but basically the same. Reading the grid needed a small change to double up cells in the x axis and then when processing the moves it was the same for left/right moves but when looking up down it had to check multiple cells. It uses a slice as a stack of cells so the first row is the left and right of a box which then looks to the next row in same direction to see how many boxes are hit which might be 0, 1 or 2, then 0, 1, 2, 3 or 4 and so on. As soon as it finds something that it can't move into (not an empty space or box) i.e. a wall then it gives up. Once it stops finding boxes and it's just empty space in the row above then it moves back down the built up boxes moving them all into the spaces that become available.
+
+I had a bit of a play with rendering as an animation in the terminal. There are a couple of commented lines to clear the terminal with an ANSI escape sequence before each frame and to sleep at the end of rendering that frame to try and reduce flicker. It doesn't work on the main input (without a long delay) and I'd need to look more at only updating the parts that have changed rathern than the entire screen.
