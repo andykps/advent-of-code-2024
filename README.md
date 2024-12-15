@@ -146,3 +146,6 @@ Again, part 1 was fun and relatively uncomplicated. If the cell to moved into is
 Part 2 was more complicated but basically the same. Reading the grid needed a small change to double up cells in the x axis and then when processing the moves it was the same for left/right moves but when looking up down it had to check multiple cells. It uses a slice as a stack of cells so the first row is the left and right of a box which then looks to the next row in same direction to see how many boxes are hit which might be 0, 1 or 2, then 0, 1, 2, 3 or 4 and so on. As soon as it finds something that it can't move into (not an empty space or box) i.e. a wall then it gives up. Once it stops finding boxes and it's just empty space in the row above then it moves back down the built up boxes moving them all into the spaces that become available.
 
 I had a bit of a play with rendering as an animation in the terminal. There are a couple of commented lines to clear the terminal with an ANSI escape sequence before each frame and to sleep at the end of rendering that frame to try and reduce flicker. It doesn't work on the main input (without a long delay) and I'd need to look more at only updating the parts that have changed rathern than the entire screen.
+
+https://github.com/user-attachments/assets/d36b2fe6-8f5f-4279-82f5-25fff2fd3ac3
+
