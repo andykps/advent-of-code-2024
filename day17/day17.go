@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -32,12 +33,34 @@ func main() {
 		fmt.Println(">>> Running program", join(program, byte(',')))
 	}
 
+	// pt 1
 	output := runProgram()
+	fmt.Println("Part 1:", join(output, ','))
+
 	if *debug {
 		printState()
 	}
 
-	fmt.Println(join(output, ','))
+	// pt 2
+	digit := 1
+	a := 1
+	for digit <= len(program) {
+		registers["A"] = a
+		registers["B"] = 0
+		registers["C"] = 0
+		output := runProgram()
+
+		if reflect.DeepEqual(output[len(output)-digit:], program[len(program)-digit:]) {
+			if len(output) == len(program) {
+				break
+			}
+			a *= 8
+			digit += 1
+			continue
+		}
+		a += 1
+	}
+	fmt.Println("Part 2", a)
 }
 
 func runProgram() (output []int) {

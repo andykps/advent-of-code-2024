@@ -156,3 +156,7 @@ My initial commit for part 1 was (I think) a breadth first solution. I started b
 
 It was enough for me to get a correct answer to submit part one, but then in part 2 it wasn't good enough and I was forced to fix it to find all routes from start to end. I started off trying to keep the paths in an slice of slices of nodes but it confusing quickly so I switched to a struct for a node that held a pointer to the previous node in its path. It worked for the test grids but crapped out after 5 minutes with `signal: killed` which when I looked at `dmesg` was shown to be the OOM killer. I understood that my path finder was trying to find all paths start to end and that I needed to discard ones that I didn't want but my initial attempt at logging visited paths wasn't taking cost into account. It was after midnight, so I went to bed and realised I needed to check if the costs of the current path was higher than any previous cost for that node and just stop processing at that point.
 
+# Day 17
+When working in a language that doesn't have a built in for `pow(2, x)` and you need to roll your own, don't forget the 2^0 = 1! My initial function didn't do this and returned 2^0=2. The test data didn't run into this problem. Other than banging my head against that problem, part 1 was relatively simple.
+
+Part 2 I've just cribbed from [Jamie](https://github.com/jamiebartlett-kps/AdventOfCode/blob/main/2024/Day17_2.mjs) and it has left me feeling a bit dirty :disappointed: :shit:
