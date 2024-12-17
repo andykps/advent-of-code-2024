@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"slices"
 )
@@ -18,11 +17,18 @@ type point struct {
 	x int
 	y int
 }
+type node struct {
+	pos point
+	cost int
+	length int
+	prev *node
+}
 
 const EMPTY byte = 46 // .
 const WALL byte = 35  // #
 const START byte = 83 // S
 const END byte = 69   // E
+const VISIT byte = 79 // O
 
 var NORTH = vec{0, -1}
 var EAST = vec{1, 0}
@@ -31,7 +37,7 @@ var WEST = vec{-1, 0}
 var dirs = []vec{NORTH, EAST, SOUTH, WEST}
 
 var grid = [][]byte{}
-var nodes = make(map[point]int)
+var nodes = []point{}
 var start point
 var end point
 
@@ -56,87 +62,108 @@ func main() {
 		fmt.Println()
 	}
 
-	nodes[start] = 0
 	// walk nodes to find costs between
-	queue := []point{start}
-	for i := 0; i < len(queue); i++ {
-		node := queue[i]
-		adj := findAdjacent(node)
-		for _, other := range adj {
-			if slices.Contains(queue, other) {
-				// if it's before us in the queue then it's already processed
-				continue
+	paths := []node{{start, 0, 0, nil}}
+	visited := make(map[point]int)
+	for i := 0; i < len(paths); i++ {
+		for head := paths[i]; head.pos != end; head = paths[i] {
+			adj := findAdjacent(head)
+			if len(adj) == 0 {
+				// can't reach end on this path
+				break
 			}
-			dx := node.x - other.x
-			dy := node.y - other.y
-			if dx < 0 {
-				dx = -dx
+			if i, ok := visited[head.pos]; ok && i < head.length {
+				break
 			}
-			if dy < 0 {
-				dy = -dy
+			for j, other := range adj {
+				dx := head.pos.x - other.x
+				dy := head.pos.y - other.y
+				if dx < 0 {
+					dx = -dx
+				}
+				if dy < 0 {
+					dy = -dy
+				}
+				cost := dx + dy + head.cost
+				next := node{other, cost, head.length + 1, &head}
+				if j == 0 {
+					paths[i] = next
+				} else {
+					paths = append(paths, next)
+				}
 			}
-			cost := dx + dy
-			nodes[other] = cost + nodes[node]
-			queue = append(queue, other)
+			visited[head.pos] = head.length
 		}
 	}
 
 	if *debug {
 		fmt.Println(nodes)
+		// fmt.Println(paths)
 	}
 
-	// walk backwards from end to start to count paths (turns)
+	// pt1 look for shortest path in paths
+	shortestPaths := []node{}
+	for _, path := range paths {
+		if path.pos == end {
+			if len(shortestPaths) == 0 || path.length == shortestPaths[0].length {
+				shortestPaths = append(shortestPaths, path)
+			} else if path.length < shortestPaths[0].length {
+				shortestPaths = []node{path}
+			}
+		}
+	}
+	slices.SortFunc(shortestPaths, func(p1 node, p2 node) int {
+		return p1.cost - p2.cost
+	})
+
+	// pt2 mark all VISITed points
+	for _, path := range shortestPaths {
+		if path.cost == shortestPaths[0].cost {
+			for node := path; node.prev != nil; node = *node.prev {
+				for y := min(node.pos.y, node.prev.pos.y); y <= max(node.pos.y, node.prev.pos.y); y++ {
+					for x := min(node.pos.x, node.prev.pos.x); x <= max(node.pos.x, node.prev.pos.x); x++ {
+						grid[y][x] = VISIT
+					}
+				}
+			}
+		}
+	}
+
+	// count the VISITs in the grid
 	count := 0
-	queue = []point{end}
-	for i := 0; i < len(queue); i++ {
-		node := queue[i]
-		min := math.MaxInt
-		var best point
-		for _, other := range findAdjacent(node) {
-			if nodes[other] < min {
-				min = nodes[other]
-				best = other
+	for y := 1; y < len(grid)-1; y++ {
+		for x := 1; x < len(grid[y])-1; x++ {
+			if grid[y][x] == VISIT {
+				count += 1
 			}
 		}
-		if best == start {
-			firstDir := slices.Index(dirs, vec{unit(node.x - start.x), unit(node.y - start.y)})
-			startDir := slices.Index(dirs, EAST)
-			if startDir == firstDir {
-				count += 0 // no need to turn
-			} else if startDir == (firstDir + 1)%4 || startDir == (firstDir - 1)%4 {
-				count += 1 // turn 90 degress
-			} else {
-				count += 2 // turn 180 degrees
-			}
-
-			break
-		}
-		count += 1
-		queue = append(queue, best)
 	}
 
-	fmt.Println(count, nodes[end], count*1000 + nodes[end])
-}
-
-func unit(i int) int {
-	if i < 0 {
-		return -1
-	} else if i > 0 {
-		return 1
-	} else {
-		return 0
+	if *debug {
+		printGrid()
 	}
+	fmt.Println("Pt1:", shortestPaths[0].length * 1000 + shortestPaths[0].cost)
+	fmt.Println("Pt2:", count)
 }
 
-func findAdjacent(p point) (adj []point) {
-	for node := range nodes {
-		dx := node.x - p.x
-		dy := node.y - p.y
-		if (dx == 0 || dy == 0) && noWallsBetween(p, node) {
+func findAdjacent(p node) (adj []point) {
+	for _, node := range nodes {
+		dx := node.x - p.pos.x
+		dy := node.y - p.pos.y
+		if (dx == 0 || dy == 0) && noWallsBetween(p.pos, node) && !inPath(p, node) {
 			adj = append(adj, node)
 		}
 	}
 	return adj
+}
+
+func inPath(head node, p point) bool {
+	for node := head; node.prev != nil; node = *node.prev {
+		if node.pos == p {
+			return true
+		}
+	}
+	return false
 }
 
 func noWallsBetween(p1 point, p2 point) bool {
@@ -181,7 +208,9 @@ func findNodes() {
 		}
 		if len(exits) > 2 || grid[queue[i].pos.y][queue[i].pos.x] == END || len(exits) == 2 && !(exits[0].dir.dy == 0 && exits[1].dir.dy == 0 || exits[0].dir.dx == 0 && exits[1].dir.dx == 0) {
 			// this must be a junction
-			nodes[queue[i].pos] = math.MaxInt
+			if !slices.Contains(nodes, queue[i].pos) {
+				nodes = append(nodes, queue[i].pos)
+			}
 		}
 	}
 }
@@ -221,7 +250,7 @@ func printGrid() {
 func printGridWithNodes() {
 	for y := 0; y < len(grid); y++ {
 		for x := 0; x < len(grid[y]); x++ {
-			if _, ok := nodes[point{x, y}]; ok {
+			if slices.Contains(nodes, point{x, y}) {
 				fmt.Print("X")
 			} else {
 				fmt.Print(string(grid[y][x]))
