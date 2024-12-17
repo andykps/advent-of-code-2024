@@ -18,28 +18,34 @@ type point struct {
 	y int
 }
 type node struct {
+	prev   *node
 	pos    point
 	cost   int
 	length int
-	prev   *node
 }
 
-const EMPTY byte = 46 // .
-const WALL byte = 35  // #
-const START byte = 83 // S
-const END byte = 69   // E
-const VISIT byte = 79 // O
+const (
+	EMPTY byte = 46 // .
+	WALL  byte = 35 // #
+	START byte = 83 // S
+	END   byte = 69 // E
+	VISIT byte = 79 // O
+)
 
-var NORTH = vec{0, -1}
-var EAST = vec{1, 0}
-var SOUTH = vec{0, 1}
-var WEST = vec{-1, 0}
-var dirs = []vec{NORTH, EAST, SOUTH, WEST}
+var (
+	NORTH = vec{0, -1}
+	EAST  = vec{1, 0}
+	SOUTH = vec{0, 1}
+	WEST  = vec{-1, 0}
+	dirs  = []vec{NORTH, EAST, SOUTH, WEST}
+)
 
-var grid = [][]byte{}
-var nodes = []point{}
-var start point
-var end point
+var (
+	grid  = [][]byte{}
+	nodes = []point{}
+	start point
+	end   point
+)
 
 func main() {
 	debug := flag.Bool("debug", false, "Output extra debug info")
@@ -63,7 +69,7 @@ func main() {
 	}
 
 	// walk nodes to find costs between
-	paths := []node{{start, 0, 0, nil}}
+	paths := []node{{nil, start, 0, 0}}
 	visited := make(map[point]int)
 	for i := 0; i < len(paths); i++ {
 		for head := paths[i]; head.pos != end; head = paths[i] {
@@ -85,7 +91,7 @@ func main() {
 					dy = -dy
 				}
 				cost := dx + dy + head.cost
-				next := node{other, cost, head.length + 1, &head}
+				next := node{&head, other, cost, head.length + 1}
 				if j == 0 {
 					paths[i] = next
 				} else {
