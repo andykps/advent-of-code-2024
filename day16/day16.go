@@ -18,10 +18,10 @@ type point struct {
 	y int
 }
 type node struct {
-	pos point
-	cost int
+	pos    point
+	cost   int
 	length int
-	prev *node
+	prev   *node
 }
 
 const EMPTY byte = 46 // .
@@ -115,6 +115,19 @@ func main() {
 	slices.SortFunc(shortestPaths, func(p1 node, p2 node) int {
 		return p1.cost - p2.cost
 	})
+	// work out how many turns to point in the initial direction
+	var firstNode node
+	for node := shortestPaths[0]; node.prev != nil; node = *node.prev {
+		firstNode = node
+	}
+	firstDir := slices.Index(dirs, vec{unit(firstNode.pos.x - firstNode.prev.pos.x), unit(firstNode.pos.y - firstNode.prev.pos.y)})
+	startDir := slices.Index(dirs, EAST)
+	initialTurns := 0
+	if startDir == (firstDir+1)%4 || startDir == (firstDir-1)%4 {
+		initialTurns = 1 // turn 90 degrees
+	} else if startDir != firstDir {
+		initialTurns = 2 // turn 180 degress
+	}
 
 	// pt2 mark all VISITed points
 	for _, path := range shortestPaths {
@@ -142,8 +155,18 @@ func main() {
 	if *debug {
 		printGrid()
 	}
-	fmt.Println("Pt1:", shortestPaths[0].length * 1000 + shortestPaths[0].cost)
+	fmt.Println("Pt1:", (shortestPaths[0].length-1+initialTurns)*1000+shortestPaths[0].cost)
 	fmt.Println("Pt2:", count)
+}
+
+func unit(i int) int {
+	if i < 0 {
+		return -1
+	} else if i > 0 {
+		return 1
+	} else {
+		return 0
+	}
 }
 
 func findAdjacent(p node) (adj []point) {
@@ -185,7 +208,7 @@ func findNodes() {
 	queue := []todo{}
 
 	for _, dir := range dirs {
-		if grid[start.y + dir.dy][start.x + dir.dx] == EMPTY {
+		if grid[start.y+dir.dy][start.x+dir.dx] == EMPTY {
 			queue = append(queue, todo{start, dir})
 		}
 	}
