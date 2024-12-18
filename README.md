@@ -160,3 +160,6 @@ It was enough for me to get a correct answer to submit part one, but then in par
 When working in a language that doesn't have a built in for `pow(2, x)` and you need to roll your own, don't forget the 2^0 = 1! My initial function didn't do this and returned 2^0=2. The test data didn't run into this problem. Other than banging my head against that problem, part 1 was relatively simple.
 
 Part 2 I've just cribbed from [Jamie](https://github.com/jamiebartlett-kps/AdventOfCode/blob/main/2024/Day17_2.mjs) and it has left me feeling a bit dirty :disappointed: :shit:
+
+# Day 18
+Part 1: The theory is that it should have just been a copy paste of day 16. I think my algorithm there wasn't optimal because it found all paths rather than attempting to get nearer to the goal. I re-read information on the [A*Star](https://matteo-tosato7.medium.com/exploring-the-depths-solving-mazes-with-a-search-algorithm-c15253104899) [algorithm](https://www.geeksforgeeks.org/a-search-algorithm/) and successfuly implemented it.
