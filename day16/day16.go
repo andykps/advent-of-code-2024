@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"slices"
 )
@@ -42,7 +43,7 @@ var (
 
 var (
 	grid  = [][]byte{}
-	nodes = []point{}
+	nodes = make(map[point]int)
 	start point
 	end   point
 )
@@ -70,15 +71,15 @@ func main() {
 
 	// walk nodes to find costs between
 	paths := []node{{nil, start, 0, 0}}
-	visited := make(map[point]int)
 	for i := 0; i < len(paths); i++ {
 		for head := paths[i]; head.pos != end; head = paths[i] {
 			adj := findAdjacent(head)
 			if len(adj) == 0 {
-				// can't reach end on this path
+				// can't reach end on this path, give up
 				break
 			}
-			if i, ok := visited[head.pos]; ok && i < head.length {
+			if nodes[head.pos] < head.length {
+				// there is a cheaper path available, give up
 				break
 			}
 			for j, other := range adj {
@@ -98,7 +99,7 @@ func main() {
 					paths = append(paths, next)
 				}
 			}
-			visited[head.pos] = head.length
+			nodes[head.pos] = head.length
 		}
 	}
 
@@ -176,7 +177,7 @@ func unit(i int) int {
 }
 
 func findAdjacent(p node) (adj []point) {
-	for _, node := range nodes {
+	for node := range nodes {
 		dx := node.x - p.pos.x
 		dy := node.y - p.pos.y
 		if (dx == 0 || dy == 0) && noWallsBetween(p.pos, node) && !inPath(p, node) {
@@ -237,9 +238,7 @@ func findNodes() {
 		}
 		if len(exits) > 2 || grid[queue[i].pos.y][queue[i].pos.x] == END || len(exits) == 2 && !(exits[0].dir.dy == 0 && exits[1].dir.dy == 0 || exits[0].dir.dx == 0 && exits[1].dir.dx == 0) {
 			// this must be a junction
-			if !slices.Contains(nodes, queue[i].pos) {
-				nodes = append(nodes, queue[i].pos)
-			}
+			nodes[queue[i].pos] = math.MaxInt
 		}
 	}
 }
@@ -279,7 +278,7 @@ func printGrid() {
 func printGridWithNodes() {
 	for y := 0; y < len(grid); y++ {
 		for x := 0; x < len(grid[y]); x++ {
-			if slices.Contains(nodes, point{x, y}) {
+			if _, ok := nodes[point{x, y}]; ok {
 				fmt.Print("X")
 			} else {
 				fmt.Print(string(grid[y][x]))
