@@ -163,3 +163,5 @@ Part 2 I've just cribbed from [Jamie](https://github.com/jamiebartlett-kps/Adven
 
 # Day 18
 Part 1: The theory is that it should have just been a copy paste of day 16. I think my algorithm there wasn't optimal because it found all paths rather than attempting to get nearer to the goal. I re-read information on the [A*Star](https://matteo-tosato7.medium.com/exploring-the-depths-solving-mazes-with-a-search-algorithm-c15253104899) [algorithm](https://www.geeksforgeeks.org/a-search-algorithm/) and successfuly implemented it.
+
+Part 2: I changed to read the whole file so that I could then pass a different slice in to build the grid and then used binary search until it found the point at which it wasn't possible to solve.

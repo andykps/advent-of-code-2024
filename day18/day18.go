@@ -49,13 +49,29 @@ func main() {
 		input = flag.Args()[0]
 	}
 
-	grid = buildGrid(input, *bytes, *width, *height)
+	coords := readFile(input)
+
+	grid = buildGrid(coords[0:*bytes], *width, *height)
 	if *debug {
 		printGrid()
 	}
 
-	steps := solveMaze(point{0, 0}, point{*width - 1, *height - 1})
-	fmt.Println(steps)
+	fmt.Println("Part 1:", solveMaze(point{0, 0}, point{*width - 1, *height - 1}))
+
+	// part 2
+	upper := len(coords)
+	lower := 0
+	for upper != lower {
+		mid := lower + (upper - lower) / 2
+		grid = buildGrid(coords[0:mid], *width, *height)
+		steps := solveMaze(point{0, 0}, point{*width - 1, *height - 1})
+		if steps == -1 {
+			upper = mid - 1
+		} else {
+			lower = mid + 1
+		}
+	}
+	fmt.Printf("Part 2: %d,%d\n", coords[upper-1].x, coords[upper-1].y)
 }
 
 func solveMaze(start point, goal point) (steps int) {
@@ -112,12 +128,7 @@ func validMove(grid [][]byte, x int, y int) bool {
 	return y >= 0 && y < len(grid) && x >= 0 && x < len(grid[y]) && grid[y][x] != BYTE
 }
 
-func buildGrid(path string, bytes int, width int, height int) (grid [][]byte) {
-	grid = make([][]byte, height)
-	for y := range grid {
-		grid[y] = slices.Repeat([]byte{EMPTY}, width)
-	}
-
+func readFile(path string) (bytes []point) {
 	f, err := os.Open(path)
 	if err != nil {
 		log.Fatal(err)
@@ -125,13 +136,22 @@ func buildGrid(path string, bytes int, width int, height int) (grid [][]byte) {
 	defer f.Close()
 
 	scanner := bufio.NewScanner(f)
-	count := 0
-	for scanner.Scan() && count < bytes {
+	for scanner.Scan() {
 		s := strings.Split(scanner.Text(), ",")
 		x, _ := strconv.Atoi(s[0])
 		y, _ := strconv.Atoi(s[1])
-		grid[y][x] = BYTE
-		count += 1
+		bytes = append(bytes, point{x, y})
+	}
+	return
+}
+
+func buildGrid(bytes []point, width int, height int) (grid [][]byte) {
+	grid = make([][]byte, height)
+	for y := range grid {
+		grid[y] = slices.Repeat([]byte{EMPTY}, width)
+	}
+	for _, b := range bytes {
+		grid[b.y][b.x] = BYTE
 	}
 
 	return
