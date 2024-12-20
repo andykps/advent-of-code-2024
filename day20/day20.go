@@ -7,7 +7,7 @@ import (
 	"log"
 	"math"
 	"os"
-	"sync"
+	"slices"
 )
 
 type point struct {
@@ -18,6 +18,12 @@ type point struct {
 type vec struct {
 	dx int
 	dy int
+}
+
+type cellCost struct {
+	x    int
+	y    int
+	cost int
 }
 
 const (
@@ -44,131 +50,93 @@ func main() {
 	}
 
 	grid := readGridFromFile(input)
-	path := solveMaze(grid)
+
+	costs, path := fillMaze(grid)
+
 	fullTime := len(path) - 1
 	fmt.Printf("Non cheater path takes %d picoseconds\n", fullTime)
 
-	walls := findCheatableWalls(grid)
-	min := 100
-	count := 0
-	concurrencyLimit := 40
+	{
+		count := 0
+		for _, cell := range path {
+			shortcuts := calculateShortcuts(2)
+			count += countCheats(costs, cell.x, cell.y, shortcuts)
+		}
+		fmt.Println("Part 1:", count)
+	}
 
-	var wg sync.WaitGroup
-	var mu sync.Mutex
+	{
+		count := 0
+		for _, cell := range path {
+			shortcuts := calculateShortcuts(20)
+			count += countCheats(costs, cell.x, cell.y, shortcuts)
+		}
+		fmt.Println("Part 2:", count)
+	}
 
-	worker := func() {
-		for {
-			mu.Lock()
-			if len(walls) == 0 {
-				mu.Unlock()
-				break
-			}
-			cheat := walls[0]
-			walls = walls[1:]
-			mu.Unlock()
+}
 
-			grid := readGridFromFile(input)
-			grid[cheat.y][cheat.x] = EMPTY
-			path := solveMaze(grid)
-	
-			if len(path)+min-2 < fullTime {
-				fmt.Println(len(path)-1)
-				mu.Lock()
-				count += 1
-				mu.Unlock()
+func calculateShortcuts(cheatLength int) (costs []cellCost) {
+	for y := -cheatLength; y < cheatLength+1; y++ {
+		for x := -cheatLength; x < cheatLength+1; x++ {
+			// md is manhattan distance
+			if md := abs(y) + abs(x); md <= cheatLength && !(x == 0 && y == 0) {
+				costs = append(costs, cellCost{x, y, md})
 			}
 		}
-
-		wg.Done()
-	}
-
-	for i := 0; i < concurrencyLimit; i++ {
-		wg.Add(1)
-		go worker()
-	}
-
-	wg.Wait()
-
-	fmt.Printf("%d cheats save at least %d picoseconds", count, min)
-	// plotPath(grid, path)
-	// printGrid(grid)
-}
-
-func solveMaze(grid [][]byte) (path []point) {
-	start := findInGrid(grid, START)
-	goal := findInGrid(grid, END)
-
-	openSet := make(map[point]int)
-	openSet[start] = heuristic(start, goal)
-
-	cameFrom := make(map[point]point)
-
-	gScore := make(map[point]int)
-	gScore[start] = 0
-
-	for len(openSet) > 0 {
-		current := lowest(openSet)
-		if current == goal {
-			return buildPath(cameFrom, current)
-		}
-		delete(openSet, current)
-		for _, dir := range dirs {
-			neighbour := point{current.x + dir.dx, current.y + dir.dy}
-			if validMove(grid, neighbour.x, neighbour.y) {
-				if score, ok := gScore[neighbour]; !ok || gScore[current]+1 < score {
-					cameFrom[neighbour] = current
-					gScore[neighbour] = gScore[current] + 1
-					openSet[neighbour] = gScore[current] + 1 + heuristic(neighbour, goal)
-				}
-			}
-		}
-	}
-
-	return nil
-}
-
-func heuristic(p1 point, p2 point) int {
-	x := p1.x - p2.x
-	y := p1.y - p2.y
-	if x < 0 {
-		x = -x
-	}
-	if y < 0 {
-		y = -y
-	}
-	return x + y
-	// return (max(p1.x, p2.x) - min(p1.x, p2.x)) + (max(p1.y, p2.y) - min(p1.y, p2.y))
-}
-
-func lowest(scores map[point]int) (lowPoint point) {
-	lowScore := math.MaxInt
-	for p, s := range scores {
-		if s < lowScore {
-			lowScore = s
-			lowPoint = p
-		}
-	}
-
-	return
-}
-
-func validMove(grid [][]byte, x int, y int) bool {
-	return grid[y][x] != WALL && y >= 0 && y < len(grid) && x >= 0 && x < len(grid[y])
-}
-
-func buildPath(cameFrom map[point]point, current point) (path []point) {
-	path = append(path, current)
-	for from, ok := cameFrom[current]; ok; from, ok = cameFrom[current] {
-		path = append([]point{from}, path...)
-		current = from
 	}
 	return
 }
 
-func plotPath(grid [][]byte, path []point) {
-	for _, p := range path {
-		grid[p.y][p.x] = PATH
+func abs(i int) int {
+	if i < 0 {
+		return -i
+	} else {
+		return i
 	}
+}
+
+func countCheats(costs [][]int, x int, y int, shortcuts []cellCost) (cheats int) {
+	minSaving := 100
+
+	for _, sc := range shortcuts {
+		x1, y1 := x+sc.x, y+sc.y
+		if y1 >= 0 && y1 < len(costs) && x1 >= 0 && x1 < len(costs[y1]) && costs[y][x]-minSaving-sc.cost >= costs[y1][x1] {
+			cheats += 1
+		}
+	}
+	return
+}
+
+func fillMaze(grid [][]byte) (costs [][]int, coords []point) {
+	end := findInGrid(grid, END)
+	costs = make([][]int, len(grid))
+	for y := 0; y < len(grid); y++ {
+		costs[y] = slices.Repeat([]int{math.MaxInt}, len(grid[y]))
+	}
+
+	queue := []cellCost{{end.x, end.y, 0}}
+	for len(queue) > 0 {
+		q := queue[0]
+		queue = queue[1:]
+
+		if costs[q.y][q.x] < math.MaxInt {
+			continue
+		}
+
+		costs[q.y][q.x] = q.cost
+		coords = append(coords, point{q.x, q.y})
+
+		for _, d := range dirs {
+			x1 := q.x + d.dx
+			y1 := q.y + d.dy
+
+			if grid[y1][x1] == EMPTY || grid[y1][x1] == START {
+				queue = append(queue, cellCost{x1, y1, q.cost + 1})
+			}
+		}
+	}
+	return
 }
 
 func findInGrid(grid [][]byte, b byte) point {
@@ -181,23 +149,6 @@ func findInGrid(grid [][]byte, b byte) point {
 	}
 	log.Fatalf("Can't find '%c' in grid\n", b)
 	return point{-1, -1} // would never get here?
-}
-
-func findCheatableWalls(grid [][]byte) (walls []point) {
-	for y := 1; y < len(grid)-1; y++ {
-		for x := 1; x < len(grid[y])-1; x++ {
-			neighbours := 0
-			for _, d := range dirs {
-				if grid[y+d.dy][x+d.dx] == WALL {
-					neighbours += 1
-				}
-			}
-			if neighbours < 3 {
-				walls = append(walls, point{x, y})
-			}
-		}
-	}
-	return
 }
 
 func readGridFromFile(path string) (grid [][]byte) {
@@ -216,13 +167,4 @@ func readGridFromFile(path string) (grid [][]byte) {
 		y += 1
 	}
 	return
-}
-
-func printGrid(grid [][]byte) {
-	for y := 0; y < len(grid); y++ {
-		for x := 0; x < len(grid[y]); x++ {
-			fmt.Print(string(grid[y][x]))
-		}
-		fmt.Println()
-	}
 }
