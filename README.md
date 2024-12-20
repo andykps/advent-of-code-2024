@@ -166,6 +166,8 @@ Part 1: The theory is that it should have just been a copy paste of day 16. I th
 
 Part 2: I changed to read the whole file so that I could then pass a different slice in to build the grid and then used binary search until it found the point at which it wasn't possible to solve.
 
+ADDENDUM: I've added vis/day18.go to visualise the path finding. It doesn't look very optimal! I appear to filling the entire grid rather than going straight towards the goal. Probably not A* then.
+
 # Day 20
 I initially solved part 1 by using my maze solving from day 18 (which may or may not be A*, I'm not sure I really know). I then found all walls with less than 3 neighbours (i.e. removing them would introduce a new possible route) and brute forced the path finding for each of these.  It solved the test grid easily enough but barfed on the real input. So I threw processing power at it and learnt a bit about goroutines, channels, mutexes and wait groups. It still took quite a while and my laptop wasn't very responsive whilst it was running but it did come out with correct result. You can see that in my commit history.
 
