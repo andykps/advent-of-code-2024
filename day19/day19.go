@@ -17,33 +17,36 @@ func main() {
 	}
 
 	patterns, designs := readFile(input)
-	
-	count := 0
+
+	pt1 := 0
+	pt2 := 0
 	for _, design := range designs {
-		memo := make(map[string]bool)
-		memo[""] = true
-		if matchDesign(design, patterns, memo) {
-			count += 1
+		memo := make(map[string]int)
+		memo[""] = 1
+
+		c := countDesigns(design, patterns, memo)
+		if c > 0 {
+			pt1 += 1
 		}
+		pt2 += c
 	}
 
-	fmt.Println(count)
+	fmt.Println("Pt1:", pt1)
+	fmt.Println("Pt2:", pt2)
 }
 
-func matchDesign(design string, patterns []string, memo map[string]bool) bool {
+func countDesigns(design string, patterns []string, memo map[string]int) int {
 	if res, ok := memo[design]; ok {
 		return res
 	}
+	count := 0
 	for _, pattern := range patterns {
 		if strings.HasPrefix(design, pattern) {
-			if (matchDesign(design[len(pattern):], patterns, memo)) {
-				memo[design] = true
-				return true
-			}
+			count += countDesigns(design[len(pattern):], patterns, memo)
 		}
 	}
-	memo[design] = false
-	return false
+	memo[design] = count
+	return count
 }
 
 func readFile(path string) (patterns []string, designs []string) {
