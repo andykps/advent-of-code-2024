@@ -1,22 +1,16 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"flag"
+	"fmt"
+	"log"
+	"os"
+	"slices"
+	"strconv"
+)
 
 type point struct{ x, y int }
-type vec struct{ dx, dy int }
-type path struct {
-	prev *path
-	point
-	dist int
-}
-
-var (
-	NORTH = vec{0, -1}
-	EAST  = vec{1, 0}
-	SOUTH = vec{0, 1}
-	WEST  = vec{-1, 0}
-	dirs  = []vec{NORTH, EAST, SOUTH, WEST}
-)
 
 var numpad = [][]byte{
 	{'7', '8', '9'},
@@ -25,57 +19,114 @@ var numpad = [][]byte{
 	{'X', '0', 'A'},
 }
 
+var dirpad = [][]byte{
+	{'X', '^', 'A'},
+	{'<', 'v', '>'},
+}
+
 func main() {
-	routes := shortestRoutes(numpad, 'A', '9')
-	for _, route := range routes {
-		for _, button := range route {
-			fmt.Printf("%v ", string(numpad[button.y][button.x]))
-		}
-		fmt.Println()
+	flag.Parse()
+	input := "input.txt"
+	if len(flag.Args()) > 0 {
+		input = flag.Args()[0]
 	}
+
+	f, err := os.Open(input)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	total := 0
+	for scanner.Scan() {
+		code := scanner.Bytes()
+
+		numpadKeys := keysForKeys(numpad, []byte(code))
+
+		dirKeys1 := keysForKeys(dirpad, numpadKeys)
+		dirKeys2 := keysForKeys(dirpad, dirKeys1)
+
+		fmt.Println(string(dirKeys2))
+		length := len(dirKeys2)
+		num := strip(code)
+		fmt.Println(length, num, length*num)
+		total += length*num
+	}
+	fmt.Println(total)
+
 }
 
-func shortestRoutes(grid [][]byte, start byte, end byte) [][]point {
-	queue := []point{findButton(grid, start)}
-	visited := map[point]bool{queue[0]: true}
-	parents := map[point][]point{queue[0]: {}}
-	distances := map[point]int{queue[0]: 0}
+func keysForKeys(keypad [][]byte, keys []byte) []byte {
+	result := []byte{}
 
-	for len(queue) > 0 {
-		curr := queue[0]
-		queue = queue[1:]
+	for i := 0; i < len(keys); i++ {
+		var start, end byte
+		if i == 0 {
+			start = 'A'
+			end = keys[i]
+		} else {
+			start = keys[i-1]
+			end = keys[i]
+		}
+		result = append(result, keysBetweenKeys(keypad, start, end)...)
+	}
+	return result
+}
 
-		for _, d := range dirs {
-			next := point{curr.x + d.dx, curr.y + d.dy}
-			if !visited[next] && isValid(grid, next) {
-				visited[next] = true
-				queue = append(queue, next)
-				distances[next] = distances[curr] + 1
-				parents[next] = []point{curr}
-			} else if distances[next] == distances[curr] + 1 {
-				parents[next] = append(parents[next], curr)
-			}
+func keysBetweenKeys(keypad [][]byte, start byte, end byte) []byte {
+	keys := []byte{}
+
+	p1 := findButton(keypad, start)
+	p2 := findButton(keypad, end)
+
+	dx := p2.x - p1.x
+	dy := p2.y - p1.y
+
+	for x := 0; x < abs(dx); x++ {
+		if dx < 0 {
+			keys = append(keys, '<')
+		} else if dx > 0 {
+			keys = append(keys, '>')
 		}
 	}
 
-	return findPathDFS(parents, findButton(grid, end))
-}
-
-func findPathDFS(parents map[point][]point, goal point) (paths [][]point) {
-	if len(parents[goal]) == 0 {
-		return [][]point{{goal}}
-	}
-
-	for _, parent := range parents[goal] {
-		for _, path := range findPathDFS(parents, parent) {
-			paths = append(paths, append(path, goal))
+	for y := 0; y < abs(dy); y++ {
+		if dy < 0 {
+			keys = append(keys, '^')
+		} else if dy > 0 {
+			keys = append(keys, 'v')
 		}
 	}
-	return
+	slices.SortFunc(keys, func(a byte, b byte) int {
+		var ai, bi int
+		switch a {
+		case '^', '>':
+			ai = 1
+		case 'v':
+			ai = 2
+		case '<':
+			ai = 3
+		}
+		switch b {
+		case '^', '>':
+			bi = 1
+		case 'v':
+			bi = 2
+		case '<':
+			bi = 3
+		}
+		return ai - bi
+	})
+	keys = append(keys, 'A')
+	return keys
 }
 
-func isValid(grid [][]byte, p point) bool {
-	return p.x >= 0 && p.y >= 0 && p.y < len(grid) && p.x < len(grid[p.y]) && grid[p.y][p.x] != 'X'
+func abs(i int) int {
+	if i < 0 {
+		return -i
+	}
+	return i
 }
 
 func findButton(grid [][]byte, b byte) point {
@@ -87,4 +138,15 @@ func findButton(grid [][]byte, b byte) point {
 		}
 	}
 	panic("Button not found")
+}
+
+func strip(s []byte) int {
+	stripped := []byte{}
+	for _, b := range s {
+		if b >= '0' && b <= '9' {
+			stripped = append(stripped, b)
+		}
+	}
+	i, _ := strconv.Atoi(string(stripped))
+	return i
 }
