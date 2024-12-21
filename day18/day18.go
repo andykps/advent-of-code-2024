@@ -34,9 +34,8 @@ var (
 	SOUTH = vec{0, 1}
 	WEST  = vec{-1, 0}
 	dirs  = []vec{NORTH, EAST, SOUTH, WEST}
-	grid [][]byte
+	grid  [][]byte
 )
-
 
 func main() {
 	debug := flag.Bool("debug", false, "Output extra debug info")
@@ -62,7 +61,7 @@ func main() {
 	upper := len(coords)
 	lower := 0
 	for upper != lower {
-		mid := lower + (upper - lower) / 2
+		mid := lower + (upper-lower)/2
 		grid = buildGrid(coords[0:mid], *width, *height)
 		steps := solveMaze(point{0, 0}, point{*width - 1, *height - 1})
 		if steps == -1 {
@@ -93,7 +92,7 @@ func solveMaze(start point, goal point) (steps int) {
 		}
 		delete(openSet, current)
 		for _, dir := range dirs {
-			neighbour := point{current.x+dir.dx, current.y+dir.dy}
+			neighbour := point{current.x + dir.dx, current.y + dir.dy}
 			if validMove(grid, neighbour.x, neighbour.y) {
 				if score, ok := gScore[neighbour]; !ok || gScore[current]+1 < score {
 					cameFrom[neighbour] = current
