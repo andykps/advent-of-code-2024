@@ -42,8 +42,6 @@ func main() {
 	}
 	fmt.Println("Part 1:", total)
 
-	// numbers = []int{123}
-
 	// pt 2
 	var prev int
 	allbuyers := [][][2]int{}
@@ -64,6 +62,7 @@ func main() {
 		allbuyers = append(allbuyers, changes)
 	}
 
+	// find all possible sequences in our data (much less than 4^19)
 	allSeqs := make(map[[4]int]bool)
 	for _, buyer := range allbuyers {
 		for i := 3; i < len(buyer); i++ {
@@ -72,33 +71,28 @@ func main() {
 		}
 	}
 
-	max := 0
+	// I'm not sure if modifying the map allSeqs (if I made it int value instead of bool)
+	// would change the iteration, so create duplicate map to keep track of price per seq
+	allPrices := make(map[[4]int]int)
 	for seq := range allSeqs {
-		prices := make([]int, len(allbuyers))
-
-	BUYER:
-		for b, buyer := range allbuyers {
-			i := 0
-			for _, change := range buyer {
-				if change[1] == seq[i] {
-					if i == 3 {
-						prices[b] = change[0]
-						continue BUYER
-					}
-					i += 1
-				} else {
-					i = 0
+		BUYER: for _, buyer := range allbuyers {
+			for i := 3; i < len(buyer); i++ {
+				if seq == [4]int{buyer[i-3][1], buyer[i-2][1], buyer[i-1][1], buyer[i][1]} {
+					allPrices[seq] += buyer[i][0]
+					continue BUYER
 				}
 			}
 		}
-		total = 0
-		for _, p := range prices {
-			total += p
-		}
-		if total > max {
-			max = total
+	}
+
+	// just find the max price
+	max := 0
+	for _, price := range allPrices {
+		if price > max {
+			max = price
 		}
 	}
+
 	fmt.Println("Part 2:", max)
 }
 
