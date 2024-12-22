@@ -43,15 +43,15 @@ func main() {
 		code := scanner.Bytes()
 
 		numpadKeys := keysForKeys(numpad, []byte(code))
-		fmt.Println(string(numpadKeys))
+		// fmt.Println(string(numpadKeys))
 		dirKeys1 := keysForKeys(dirpad, numpadKeys)
-		fmt.Println(string(dirKeys1))
+		// fmt.Println(string(dirKeys1))
 		dirKeys2 := keysForKeys(dirpad, dirKeys1)
 
-		fmt.Println(string(dirKeys2))
+		// fmt.Println(string(dirKeys2))
 		length := len(dirKeys2)
 		num := strip(code)
-		fmt.Println(length, num, length*num)
+		// fmt.Println(length, num, length*num)
 		total += length * num
 	}
 	fmt.Println(total)
@@ -99,8 +99,23 @@ func keysBetweenKeys(keypad [][]byte, start byte, end byte) []byte {
 			keys = append(keys, 'v')
 		}
 	}
+	order := []byte("<v^>")
+	if len(keypad) == 4 {
+		// numpad
+		if (start == '0' || start == 'A') && (end == '1' || end == '4' || end == '7') {
+			order = []byte("^v<>")
+		} else if start == '1' || start == '4' || start == '7' {
+			order = []byte("><v^")
+		}
+	} else {
+		// dirpad
+		if start == '^' || start == 'A' {
+			order = []byte("v<^>")
+		} else if start == '>' {
+			order = []byte("><v^")
+		}
+	}
 	slices.SortFunc(keys, func(a byte, b byte) int {
-		order := []byte("<^v>")
 		return slices.Index(order, a) - slices.Index(order, b)
 	})
 	keys = append(keys, 'A')
