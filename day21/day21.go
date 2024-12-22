@@ -24,7 +24,10 @@ var dirpad = [][]byte{
 	{'<', 'v', '>'},
 }
 
+var cache = make(map[string]int)
+
 func main() {
+	pt2 := flag.Bool("pt2", false, "Should we calculate for part 2")
 	flag.Parse()
 	input := "input.txt"
 	if len(flag.Args()) > 0 {
@@ -39,23 +42,56 @@ func main() {
 
 	scanner := bufio.NewScanner(f)
 	total := 0
+
+	robotCount := 2
+	if *pt2 {
+		robotCount = 25
+	}
+
 	for scanner.Scan() {
 		code := scanner.Bytes()
 
 		numpadKeys := keysForKeys(numpad, []byte(code))
-		// fmt.Println(string(numpadKeys))
-		dirKeys1 := keysForKeys(dirpad, numpadKeys)
-		// fmt.Println(string(dirKeys1))
-		dirKeys2 := keysForKeys(dirpad, dirKeys1)
 
-		// fmt.Println(string(dirKeys2))
-		length := len(dirKeys2)
+		length := countKeyPresses(dirpad, numpadKeys, robotCount)
+
 		num := strip(code)
-		// fmt.Println(length, num, length*num)
 		total += length * num
 	}
 	fmt.Println(total)
 
+}
+
+func countKeyPresses(keypad [][]byte, keys []byte, robot int) (count int) {
+	cacheKey := fmt.Sprintf("%v-%d", keys, robot)
+	if res, ok := cache[cacheKey]; ok {
+		return res
+	}
+
+	subKeys := keysForKeys(keypad, keys)
+	if robot == 1 {
+		return len(subKeys)
+	}
+
+	groups := splitOnA(subKeys)
+	for _, g := range groups {
+		count += countKeyPresses(keypad, g, robot-1)
+	}
+
+	cache[cacheKey] = count
+
+	return
+}
+
+func splitOnA(input []byte) (output [][]byte) {
+	prev := 0
+	for i := 0; i < len(input); i++ {
+		if input[i] == 'A' {
+			output = append(output, input[prev:i+1])
+			prev = i + 1
+		}
+	}
+	return
 }
 
 func keysForKeys(keypad [][]byte, keys []byte) []byte {
