@@ -62,7 +62,7 @@ func main() {
 		allbuyers = append(allbuyers, changes)
 	}
 
-	// find all possible sequences in our data (much less than 4^19)
+	// find all possible sequences in our data (much less than 19^4)
 	allSeqs := make(map[[4]int]bool)
 	for _, buyer := range allbuyers {
 		for i := 3; i < len(buyer); i++ {
