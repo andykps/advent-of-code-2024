@@ -143,16 +143,16 @@ func keysBetweenKeys(keypad [][]byte, start byte, end byte) []byte {
 	if len(keypad) == 4 {
 		// numpad
 		if (start == '0' || start == 'A') && (end == '1' || end == '4' || end == '7') {
-			order = []byte("^v<>")
-		} else if start == '1' || start == '4' || start == '7' {
-			order = []byte("><v^")
+			order = []byte("^<>")
+		} else if (start == '1' || start == '4' || start == '7') && (end == '0' || end == 'A') {
+			order = []byte(">v")
 		}
 	} else {
 		// dirpad
-		if start == '^' || start == 'A' {
-			order = []byte("v<^>")
-		} else if start == '>' {
-			order = []byte("><v^")
+		if (start == '^' || start == 'A') && end == '<' {
+			order = []byte("v<")
+		} else if start == '<' {
+			order = []byte(">^")
 		}
 	}
 	slices.SortFunc(keys, func(a byte, b byte) int {
