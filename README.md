@@ -190,3 +190,26 @@ Part 1 was deceptively easy. On part 2 I've no idea if there is a clever way to 
 
 # Day 23
 For part 1 I did a crude following of neighbours that was limited at a length of 3, dedupe for paths in differing orders between the nodes and extract those with "t" in the node name. That didn't scale for part 2 where I needed to find much larger groups. I did a bit of reading on graph theory and it turns out these groups are called cliques. I think it was a lucky accident (or intentional on the part of the puzzle maker?) that there is only 1 clique that is longest because it meant that my method of looking for all node that had connections to the members already in the clique found the answer quickly. It wasn't until I started trying to generalise it to do part 1 too that I realised that it wasn't finding all cliques at each size, i.e. if a node was already in a clique then it wouldn't be included in others. I gave up trying to generalise and just have 2 separate methods for part 1 and 2.
+
+# Day 24
+Another day where a deceptively easy and fun part 1 led into a extremely difficult and frustrating part 2. I did part on Christmas Eve but part 2 got left until the 27th when it took a lot of grinding to get a result. It's not an automatic result and you couldn't run my code with different inputs to automatically arrive at a solution. I might see if I could do that later but I'm done for now.
+
+I started by setting all of the input wires to 1 and seeing which bits were incorrect in the result (they should all have been 1 except for bit 0) but then I couldn't work out how to work backwards from that to determine correct inputs. So instead I looped from 0 to 1<<44 (i.e. 0,1,2,4,8,16 ...) and use this number as the input to both x and y wires. I then compared the result with what it should have been and this allowed me to identify problematic outputs: `z05 z11 z12 z25 z35 z36`
+
+Looking at the gate with output `z05` I could see that it had its inputs <em>AND</em>ed rather than <em>XOR</em>ed like others z gates. From searching the input file I found another gate with the same inputs <em>XOR</em>ed, so I swapped them. Running the simulation again showed that "z05" wasn't a problem any more.
+
+Moving to gate `z11` I saw that it was using and _OR_ to produce the `z`, but there wasn't a gate with the same inputs and a _XOR_ like before. I then wrote some debug to output all gates that were an _XOR_ op but didn't have `xy` inputs or a `z` output. I had seen this was unusual from the other gates and it identified 3 (one of which was already fixed in the `z05` swap). I wrote some more debug to take a gate output and trace back its inputs up to a supplied maximum. I could see for `z11`, one of the 2 remaining abnormal _XOR_ gates had the same input as was being provided by gates directly under it so I swapped them and both gates `z11` and `z12` had the correct output.
+
+I noticed that the input to `z35` was only `x35 AND y35` rather than a cascade from previous gates so it was highly likely to be swapped. There was one final 'spare' _XOR_ gate so I swapped that with the input to `z35` and both gates `z35` and `z36` were fixed.
+
+This left `z25`. I used my hierarchy debug to look at the input gates and realised that there was a _XOR_ of `x24` and `y24` where I was expecting an _AND_ based on other gates setup. Looking at `z24` I could see there was a corresponding _AND_ with the same inputs where a _XOR_ would be expected, so I swapped them and there were no more incorrect sums indentified by the simulator.
+
+I didn't even bother to use a software solution to sort my gate outputs but just did it manually and copied the final string to the output. Success!
+
+# Day 25
+Well I didn't do it on Christmas Day but it was a nice end to the tasks. Deceptively simple with some trickyness in the parsing of the input data, but not enough to cause a long drawn out troubleshooting session.
+
+# The final word
+I've enjoyed this year's AOC. It has been fun to learn Go and I hope to be able to revisit these puzzles and optimise them a bit more, especially with some shared libraries for reading grids, finding paths etc. There has been a lot of copying and pasting to save time but things could be much better organised.
+
+I didn't get all of the way through using Neovim, although I am now writing this README using it. I've cut back all of my plugins and I'm just using the Nvim kickstarter and turning on plugins one by one. It's not great for Go development yet but Neovim has now replaced Vim as my default terminal editor. I still can't help using the cursor keys so that's going to be something to work on.
